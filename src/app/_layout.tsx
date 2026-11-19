@@ -1,7 +1,7 @@
 import { Tabs } from 'expo-router';
 import { useFonts } from 'expo-font';
 import { StatusBar } from 'expo-status-bar';
-import { Platform, Text, View, useWindowDimensions } from 'react-native';
+import { Linking, Platform, Pressable, Text, View, useWindowDimensions } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppProvider } from '../state/AppProvider';
 import { ToastHost } from '../ui/components';
@@ -17,13 +17,24 @@ const icon = (glyph: string) => function Icon({ color }: { color: import('react-
 
 // Set only for hosted test builds so nobody mistakes the preview for a release.
 const previewLabel = Platform.OS === 'web' ? (process.env.EXPO_PUBLIC_PREVIEW_LABEL ?? '').trim() : '';
+const previewApkUrl = Platform.OS === 'web' ? (process.env.EXPO_PUBLIC_PREVIEW_APK_URL ?? '').trim() : '';
 
 function PreviewStrip() {
   const { c } = useTheme();
   if (!previewLabel) return null;
   return (
-    <View style={{ backgroundColor: c.chip, borderBottomColor: c.warn, borderBottomWidth: 1, paddingHorizontal: 16, paddingVertical: 6 }}>
+    <View style={{ backgroundColor: c.chip, borderBottomColor: c.warn, borderBottomWidth: 1, paddingHorizontal: 16, paddingVertical: 6, flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', columnGap: 12, rowGap: 6 }}>
       <Text style={[typography.caption, { color: c.text, textAlign: 'center' }]}>{previewLabel}</Text>
+      {previewApkUrl ? (
+        <Pressable
+          accessibilityRole="link"
+          accessibilityLabel="Download the Android APK"
+          onPress={() => { void Linking.openURL(previewApkUrl); }}
+          style={{ backgroundColor: c.primary, borderRadius: 999, paddingHorizontal: 14, minHeight: 32, justifyContent: 'center' }}
+        >
+          <Text style={[typography.caption, { color: c.onPrimary, fontWeight: '700' }]}>Download APK</Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 }

@@ -30,6 +30,7 @@ jobs:
           CI: 1
           EXPO_NO_TELEMETRY: 1
           EXPO_PUBLIC_PREVIEW_LABEL: Testing / development preview. Not a final release.
+          EXPO_PUBLIC_PREVIEW_APK_URL: https://github.com/hredoymesha/personal-assistant/releases/latest/download/personal-assistant-preview.apk
           EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID: ${{ vars.GOOGLE_WEB_CLIENT_ID }}
       - name: Single-page fallback
         run: |
