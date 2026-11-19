@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Personal Assistant preview</title>
+<style>
+  :root { --bg: #0F172A; --card: #1E293B; --text: #F8FAFC; --sub: #94A3B8; --line: #334155; --accent: #818CF8; --warn: #FBBF24; }
+  @media (prefers-color-scheme: light) {
+    :root { --bg: #F8FAFC; --card: #FFFFFF; --text: #0F172A; --sub: #475569; --line: #E2E8F0; --accent: #312E81; --warn: #B45309; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.6 Georgia, "Noto Serif Bengali", serif; }
+  main { max-width: 640px; margin: 0 auto; padding: 32px 16px 48px; }
+  .label { display: inline-block; border: 1px solid var(--warn); color: var(--warn); border-radius: 999px; padding: 2px 12px; font-size: 14px; }
+  h1 { font-size: 30px; line-height: 1.2; margin: 16px 0 8px; }
+  p { margin: 0 0 16px; }
+  .sub { color: var(--sub); }
+  .links { display: grid; gap: 12px; margin: 24px 0; }
+  .links a, .links span { display: block; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); color: var(--text); text-decoration: none; }
+  .links a:hover, .links a:focus-visible { border-color: var(--accent); }
+  .links small { display: block; color: var(--sub); }
+  h2 { font-size: 20px; margin: 32px 0 8px; }
+  ul { padding-left: 20px; margin: 0; }
+  li { margin-bottom: 6px; }
+</style>
+</head>
+<body>
+<main>
+  <span class="label">Testing / development preview</span>
+  <h1>Personal Assistant</h1>
+  <p>A local-first app for tasks, expenses, bills, savings, debts, wallets and shared mess accounts. Your records stay in your browser or on your phone. There is no account, no ads and no analytics.</p>
+  <p class="sub">This is a test build, not a finished release. Expect rough edges, and don't keep your only copy of anything important in it.</p>
+
+  <div class="links" id="links">
+    <a href="./">Open the web app<small>Runs in this browser. Tap Load sample data on Home to look around.</small></a>
+  </div>
+
+  <h2>Not tested yet</h2>
+  <ul>
+    <li>The Android APK on a range of real phones.</li>
+    <li>Google Drive backup. Only browser sign-in has been checked so far.</li>
+    <li>Contacts, SOS calling, location sharing and the share sheet, which only exist on a phone.</li>
+    <li>Opening the web app offline after a reload.</li>
+  </ul>
+
+  <h2>Good to know</h2>
+  <ul>
+    <li>Browser data and phone data are separate. Move data between them with an encrypted backup file.</li>
+    <li>Data saved in the browser is not encrypted. Backups are, with a passphrase only you know.</li>
+  </ul>
+</main>
+<script>
+  // Fill these in before publishing. Empty links are left out of the page.
+  var SOURCE_URL = '';
+  var APK_URL = '';
+  var links = document.getElementById('links');
+  function add(href, title, note) {
+    var a = document.createElement('a');
+    a.href = href;
+    a.rel = 'noopener';
+    a.textContent = title;
+    var s = document.createElement('small');
+    s.textContent = note;
+    a.appendChild(s);
+    links.appendChild(a);
+  }
+  if (APK_URL) add(APK_URL, 'Download the Android APK', 'Test build. Check the SHA-256 checksum on the release page before installing.');
+  else {
+    var p = document.createElement('span');
+    p.textContent = 'Android APK: not published yet';
+    links.appendChild(p);
+  }
+  if (SOURCE_URL) add(SOURCE_URL, 'Source code on GitHub', 'Build it yourself or read how it works.');
+  add('./privacy-policy.html', 'Privacy policy', 'What the app stores and where.');
+</script>
+</body>
+</html>
