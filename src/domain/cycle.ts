@@ -8,7 +8,7 @@
  */
 
 import { Minor, isSupportedCurrency, sumMinor } from './money';
-import { DateStr, isValidDateStr } from './dates';
+import { DateStr, addDays, isValidDateStr, toDateStr } from './dates';
 import { Result } from './validation';
 
 const ok = <T>(value: T): Result<T> => ({ ok: true, value });
@@ -405,7 +405,7 @@ export function computeBillMonthState(
   monthKey: string,
   payments: CyclePayment[],
   previousMonthState?: BillMonthState | null,
-  today: DateStr = new Date().toISOString().slice(0, 10) as DateStr,
+  today: DateStr = toDateStr(new Date()),
   overrides: CycleBillOverride[] = [],
 ): BillMonthState {
   const override = overrides.find((item) => item.billId === bill.id && item.userId === bill.userId && item.monthKey === monthKey);
@@ -515,10 +515,8 @@ export function computeBillMonthState(
     status = 'overdue';
   } else {
     // 3-day reminder window
-    const [y, m, d] = computedDueDate.split('-').map(Number);
-    const dueDateObj = new Date(y, m - 1, d);
-    const threeDaysBefore = new Date(dueDateObj.getTime() - 3 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
-    if (today >= threeDaysBefore) {
+    // Plain calendar arithmetic: going through Date and toISOString shifted the window by a day east of UTC.
+    if (today >= addDays(computedDueDate, -3)) {
       status = 'due';
     } else {
       status = 'upcoming';
@@ -554,7 +552,7 @@ export function computeMonthSummary(
   incomes: CycleIncome[],
   months: CycleMonth[],
   previousMonthSummary?: MonthSummary | null,
-  today: DateStr = new Date().toISOString().slice(0, 10) as DateStr,
+  today: DateStr = toDateStr(new Date()),
   overrides: CycleBillOverride[] = [],
 ): MonthSummary {
   // Only this user's records
@@ -683,7 +681,7 @@ export function computeGroupedMonthSheet(
   groups: CycleGroup[],
   payments: CyclePayment[],
   months: CycleMonth[],
-  today: DateStr = new Date().toISOString().slice(0, 10) as DateStr,
+  today: DateStr = toDateStr(new Date()),
   overrides: CycleBillOverride[] = [],
 ): GroupedMonthSheet {
   const userBills = backfillBillGroupIds(bills.filter((b) => b.userId === userId), groups);

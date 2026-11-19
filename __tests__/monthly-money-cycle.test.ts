@@ -39,7 +39,7 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
   getAllKeys: jest.fn(() => Promise.resolve([])),
 }));
 
-describe('Monthly Money Cycle ', () => {
+describe('Monthly Money Cycle', () => {
   const userIdA = 'user_123';
   const userIdB = 'user_999';
 
@@ -98,7 +98,7 @@ describe('Monthly Money Cycle ', () => {
         },
       ];
 
-      const novState = computeBillMonthState(baseBill, '2026-11', novPayments, octState, '2026-11-06' as any);
+      const novState = computeBillMonthState(baseBill, '2026-11', novPayments, octState, '2026-11-07' as any);
       expect(novState.carryInMinor).toBe(40000);       // ৳400
       expect(novState.expectedAmountMinor).toBe(100000); // ৳1,000
       expect(novState.totalDueMinor).toBe(140000);     // ৳1,400
