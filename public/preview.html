@@ -37,24 +37,23 @@
     <a href="./">Open the web app<small>Runs in this browser. Tap Load sample data on Home to look around.</small></a>
   </div>
 
-  <h2>Not tested yet</h2>
+  <h2>Still in testing</h2>
   <ul>
-    <li>The Android APK on a range of real phones.</li>
-    <li>Google Drive backup. Only browser sign-in has been checked so far.</li>
-    <li>Contacts, SOS calling, location sharing and the share sheet, which only exist on a phone.</li>
-    <li>Opening the web app offline after a reload.</li>
+    <li>The Android app has been tried on one phone so far.</li>
+    <li>Google Drive backup isn't set up in this preview. Encrypted backup files work.</li>
+    <li>Contacts, SOS calling and location sharing only work in the Android app.</li>
+    <li>The web version needs a connection when you reload it.</li>
   </ul>
 
-  <h2>Good to know</h2>
+  <h2>Your data</h2>
   <ul>
     <li>Browser data and phone data are separate. Move data between them with an encrypted backup file.</li>
     <li>Data saved in the browser is not encrypted. Backups are, with a passphrase only you know.</li>
   </ul>
 </main>
 <script>
-  // Fill these in before publishing. Empty links are left out of the page.
-  var SOURCE_URL = '';
-  var APK_URL = '';
+  var SOURCE_URL = 'https://github.com/hredoymesha/personal-assistant';
+  var APK_URL = 'https://github.com/hredoymesha/personal-assistant/releases/latest/download/personal-assistant-preview.apk';
   var links = document.getElementById('links');
   function add(href, title, note) {
     var a = document.createElement('a');

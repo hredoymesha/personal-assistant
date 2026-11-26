@@ -116,7 +116,6 @@ export function DebtReminderModal({ debt, contacts, onClose }: DebtReminderModal
               </Pressable>
             </View>
 
-            {/* Recipient & Amount Card */}
             <Card style={{ backgroundColor: c.bg, borderColor: c.border, marginBottom: space.md }}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Text style={[typography.body, { color: c.text, fontWeight: '700' }]}>{debt.person}</Text>
@@ -131,7 +130,6 @@ export function DebtReminderModal({ debt, contacts, onClose }: DebtReminderModal
               </Text>
             </Card>
 
-            {/* Phone Number Field */}
             <Field
               label="Recipient phone number"
               placeholder="e.g. 01712-345678 or +8801..."
@@ -144,7 +142,6 @@ export function DebtReminderModal({ debt, contacts, onClose }: DebtReminderModal
               error={phone.trim() && !isPhoneValid ? 'Please enter at least 7 digits in standard format.' : null}
             />
 
-            {/* Matching contact phone suggestion if multiple were found */}
             {matchingContacts.length > 0 && (!initialPhone || matchingContacts[0].phones.length > 1) ? (
               <View style={{ marginBottom: space.md }}>
                 <Text style={[typography.secondary, { color: c.sub, marginBottom: 4 }]}>Matching contacts found:</Text>
@@ -165,7 +162,6 @@ export function DebtReminderModal({ debt, contacts, onClose }: DebtReminderModal
               </View>
             ) : null}
 
-            {/* Language Selector */}
             <View style={{ marginBottom: space.md }}>
               <Text style={[typography.secondary, { color: c.sub, marginBottom: 6 }]}>Message Language:</Text>
               <View style={{ flexDirection: 'row', gap: 8 }}>
@@ -188,7 +184,6 @@ export function DebtReminderModal({ debt, contacts, onClose }: DebtReminderModal
               </View>
             </View>
 
-            {/* Message Editing Field */}
             <Field
               label="Reminder message - editable"
               value={currentMessage}
@@ -197,7 +192,6 @@ export function DebtReminderModal({ debt, contacts, onClose }: DebtReminderModal
               numberOfLines={4}
             />
 
-            {/* Live Message Preview */}
             <View style={{ marginBottom: space.md }}>
               <Text style={[typography.secondary, { color: c.sub, marginBottom: 4, fontWeight: '600' }]}>
                 Live Preview (WhatsApp chat draft):
@@ -210,7 +204,6 @@ export function DebtReminderModal({ debt, contacts, onClose }: DebtReminderModal
               </View>
             </View>
 
-            {/* Status Feedback Notice */}
             {feedback ? (
               <View style={[styles.feedback, { backgroundColor: feedback.tone === 'danger' ? '#FEF2F2' : '#F0FDF4', borderColor: feedback.tone === 'danger' ? c.danger : c.success }]}>
                 <Text style={{ color: feedback.tone === 'danger' ? c.danger : c.success, fontSize: 13 }}>
@@ -219,12 +212,10 @@ export function DebtReminderModal({ debt, contacts, onClose }: DebtReminderModal
               </View>
             ) : null}
 
-            {/* Safety & Non-Automated Disclosure */}
             <Text style={{ color: c.sub, fontSize: 12, marginBottom: space.lg, lineHeight: 16 }}>
               Opening WhatsApp prepares this draft in your chat. Personal Assistant does not send messages automatically and does not mark debts as paid.
             </Text>
 
-            {/* Action Buttons */}
             <View style={{ flexDirection: 'row', gap: 10 }}>
               <Button
                 label="Open in WhatsApp"

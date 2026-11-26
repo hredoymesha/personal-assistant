@@ -40,7 +40,7 @@ Search finds tasks as you type. Finished tasks can be reopened. Deleted tasks go
 
 **Month**: income against bills, what's paid and what's left. If bills are bigger than income it says so plainly as a shortfall. **Close month** makes that month read-only; you can reopen it, and each close and reopen is kept in the lock history.
 
-**Daily sheet**: a day-by-day list, like a notebook. Each entry has a date, a place, an amount and a note, and you can add your own columns. Dates can be typed with Bengali digits. Filter by date range or search, then export the filtered list as CSV, or as an Excel file plus a PDF. Imports from CSV or Excel show a preview first, and rows you already have are flagged as duplicates.
+**Daily sheet**: a day-by-day list, like a notebook. Each entry has a date, a place, an amount and a note, and you can add your own columns. Dates can be typed with Bengali digits. Filter by date range or search, then export the filtered list as CSV, Excel or PDF, each with its own button. Imports from CSV or Excel show a preview first, and rows you already have are flagged as duplicates.
 
 ## Settings
 

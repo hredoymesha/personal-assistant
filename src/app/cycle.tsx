@@ -69,7 +69,6 @@ export default function CycleScreen() {
       <Chips label="View" options={['Cycle', 'Daily sheet']} labels={{ 'Daily sheet': 'Daily sheet' }} value={mode === 'cycle' ? 'Cycle' : 'Daily sheet'} onChange={(value) => setMode(value === 'Cycle' ? 'cycle' : 'daily')} />
       {mode === 'daily' ? <DailyExpenseSheet /> : (
       <>
-      {/* Month Selector Bar */}
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginBottom: 16 }}>
         <Button kind="secondary" label="← Prev" onPress={() => changeMonth(-1)} />
         <View style={{ alignItems: 'center' }}>
@@ -81,10 +80,8 @@ export default function CycleScreen() {
         <Button kind="secondary" label="Next →" onPress={() => changeMonth(1)} />
       </View>
 
-      {/* Sub-tabs selector */}
       <Chips label="Section" options={SUB_TABS} value={subTab} onChange={setSubTab} />
 
-      {/* Sub-tab view */}
       {subTab === 'Bills' ? (
         <BillsSection monthKey={selectedMonth} userId={userId} isClosed={summary.isClosed} />
       ) : subTab === 'Income' ? (
@@ -99,9 +96,7 @@ export default function CycleScreen() {
   );
 }
 
-// -------------------------------------------------------------
-// 1. BILLS SECTION
-// -------------------------------------------------------------
+// Bills
 
 function BillsSection({ monthKey, userId, isClosed }: { monthKey: string; userId: string; isClosed: boolean }) {
   const { width } = useWindowDimensions();
@@ -130,9 +125,9 @@ function BillsSection({ monthKey, userId, isClosed }: { monthKey: string; userId
   const [payModalBill, setPayModalBill] = useState<CycleBill | null>(null);
   const [debtDeleteBill, setDebtDeleteBill] = useState<CycleBill | null>(null);
 
-  // Filter chips state (A5)
+  // Filter chips state
   const [filter, setFilter] = useState<BillFilterType>('All');
-  // Collapsed state per group (A1, A8)
+  // Collapsed state per group
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
   const toggleGroup = (key: string) => setCollapsedGroups((prev) => ({ ...prev, [key]: !prev[key] }));
 
@@ -142,7 +137,7 @@ function BillsSection({ monthKey, userId, isClosed }: { monthKey: string; userId
   const [editingGroupId, setEditingGroupId] = useState<string | null>(null);
   const [editingGroupName, setEditingGroupName] = useState('');
 
-  // New bill form states (Part B: external-paid fields)
+  // New bill form, including the external-payer fields
   const [name, setName] = useState('');
   const [groupId, setGroupId] = useState<string>(''); // Default empty = No Group
   const [amountStr, setAmountStr] = useState('');
@@ -183,7 +178,7 @@ function BillsSection({ monthKey, userId, isClosed }: { monthKey: string; userId
     setLoadingTemplate(false);
   }
 
-  // Compute grouped month sheet (Single Source of Truth A6)
+  // Grouped month sheet; the month total is derived from its group subtotals
   const groupedSheet = useMemo(() => {
     return computeGroupedMonthSheet(
       monthKey,
@@ -383,7 +378,6 @@ function BillsSection({ monthKey, userId, isClosed }: { monthKey: string; userId
         </Text>
       </View>
 
-      {/* User-defined Groups Manager */}
       {showManageGroups ? (
         <Card style={{ borderColor: c.primary, borderWidth: 1 }}>
           <Text style={[typography.cardTitle, { color: c.text, marginBottom: 4 }]}>Custom bill groups</Text>
@@ -391,7 +385,6 @@ function BillsSection({ monthKey, userId, isClosed }: { monthKey: string; userId
             Create and organize categories. Bills may also stay ungrouped.
           </Text>
 
-          {/* Add new group input */}
           <View style={{ flexDirection: compact ? 'column' : 'row', gap: 8, alignItems: compact ? 'stretch' : 'center', marginBottom: 10 }}>
             <View style={{ flex: 1 }}>
               <Field
@@ -418,7 +411,6 @@ function BillsSection({ monthKey, userId, isClosed }: { monthKey: string; userId
           </View>
           {groupError ? <Text style={[typography.caption, { color: c.danger, marginBottom: 6 }]}>{groupError}</Text> : null}
 
-          {/* List of custom groups */}
           {customGroups.length === 0 ? (
             <Text style={[typography.caption, { color: c.sub, fontStyle: 'italic', marginVertical: 6 }]}>
               No groups yet.
@@ -550,7 +542,6 @@ function BillsSection({ monthKey, userId, isClosed }: { monthKey: string; userId
         </Card>
       ) : null}
 
-      {/* New bill Modal / Card */}
       {openNew ? (
         <Card>
           <Text style={[typography.cardTitle, { color: c.text, marginBottom: 8 }]}>{editingBill ? 'Edit Recurring Bill' : 'Add Recurring Bill'}</Text>
@@ -561,7 +552,6 @@ function BillsSection({ monthKey, userId, isClosed }: { monthKey: string; userId
           ) : null}
           <Field label="Bill name" value={name} onChangeText={setName} placeholder="e.g. Electricity, Internet, Rent" />
 
-          {/* Group Selection: user-defined groups or No Group */}
           {customGroups.length > 0 ? (
             <Chips
               label="Group - user-defined or none"
@@ -595,7 +585,6 @@ function BillsSection({ monthKey, userId, isClosed }: { monthKey: string; userId
           <Field label="Payee / provider" value={payee} onChangeText={setPayee} placeholder="e.g. DESCO, Dot Internet" />
           <Field label="Installment count - optional, leave empty if it never ends" value={installmentStr} onChangeText={setInstallmentStr} keyboardType="numeric" placeholder="e.g. 12" />
 
-          {/* Part B: External Payer Selection */}
           <Chips
             label="Paid by - self or external party"
             options={['self', 'person', 'lender', 'credit'] as const}
@@ -638,7 +627,6 @@ function BillsSection({ monthKey, userId, isClosed }: { monthKey: string; userId
         </Card>
       ) : null}
 
-      {/* Pay Partial / Full Modal */}
       {payModalBill ? (() => {
         const state = groupedSheet.groups.flatMap((g) => g.billStates).find((s) => s.bill.id === payModalBill.id);
         const rem = state?.remainingMinor ?? 0;
@@ -664,7 +652,6 @@ function BillsSection({ monthKey, userId, isClosed }: { monthKey: string; userId
         );
       })() : null}
 
-      {/* Linked Debt Delete Dialog (B5) */}
       {debtDeleteBill ? (
         <Card style={{ borderColor: c.danger, borderWidth: 1 }}>
           <Text style={{ color: c.danger, fontWeight: '700', fontSize: 15, marginBottom: 4 }}>
@@ -698,7 +685,6 @@ function BillsSection({ monthKey, userId, isClosed }: { monthKey: string; userId
         </Card>
       ) : null}
 
-      {/* Filter Chips (A5) */}
       <View style={{ marginVertical: 2 }}>
         <Chips
           label="Filter status"
@@ -708,7 +694,6 @@ function BillsSection({ monthKey, userId, isClosed }: { monthKey: string; userId
         />
       </View>
 
-      {/* Grouped Month Sheet (A1, A2, A3, A8) */}
       {groupedSheet.groups.every((g) => g.billStates.length === 0) ? (
         <EmptyState title="No bills found" hint="Add recurring bills to track your monthly commitments and carry-ins." />
       ) : (
@@ -725,7 +710,6 @@ function BillsSection({ monthKey, userId, isClosed }: { monthKey: string; userId
 
             return (
               <Card key={groupKey} style={{ gap: 10 }}>
-                {/* Group Header (A2) */}
                 <View style={{ flexDirection: compact ? 'column' : 'row', gap: compact ? 8 : 12, justifyContent: 'space-between', alignItems: compact ? 'stretch' : 'center' }}>
                   <View style={{ flex: 1 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
@@ -752,7 +736,6 @@ function BillsSection({ monthKey, userId, isClosed }: { monthKey: string; userId
                   />
                 </View>
 
-                {/* Group Rows (A3) */}
                 {!isCollapsed ? (
                   visibleBills.length === 0 ? (
                     <Text style={[typography.caption, { color: c.sub, fontStyle: 'italic', paddingVertical: 4 }]}>
@@ -799,12 +782,10 @@ function BillsSection({ monthKey, userId, isClosed }: { monthKey: string; userId
                               </View>
                             </View>
 
-                            {/* Details: Expected, Paid, Remaining */}
                             <Text style={[typography.caption, { color: c.sub }]}>
                               Expected {formatMoney(st.expectedAmountMinor, bill.currency)} · Paid {formatMoney(totalPaidMinor, bill.currency)} · Remaining {formatMoney(remainingMinor, bill.currency)}
                             </Text>
 
-                            {/* External-paid badge (Part B) */}
                             {isExternal ? (
                               <View style={{ backgroundColor: c.border, padding: 8, borderRadius: 8, gap: 2 }}>
                                 <Text style={[typography.caption, { color: c.primary, fontWeight: '700' }]}>
@@ -816,7 +797,6 @@ function BillsSection({ monthKey, userId, isClosed }: { monthKey: string; userId
                               </View>
                             ) : null}
 
-                            {/* Carry-in badge */}
                             {carryInMinor > 0 ? (
                               <View style={{ backgroundColor: c.border, padding: 8, borderRadius: 8 }}>
                                 <Text style={[typography.caption, { color: c.sub }]}>
@@ -825,7 +805,6 @@ function BillsSection({ monthKey, userId, isClosed }: { monthKey: string; userId
                               </View>
                             ) : null}
 
-                            {/* Actions */}
                             {!isClosed && status !== 'completed' ? (
                               <View style={{ flexDirection: 'row', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
                                 {!isPaid ? (
@@ -889,7 +868,6 @@ function BillsSection({ monthKey, userId, isClosed }: { monthKey: string; userId
             );
           })}
 
-          {/* Month Total Row (A4) */}
           <Card style={{ borderColor: c.primary, borderWidth: 1, marginTop: 4 }}>
             {(() => {
               const monthCurrency = getUniformCurrency(groupedSheet.groups.flatMap((group) => group.billStates.map((state) => state.bill.currency)));
@@ -944,9 +922,7 @@ function BillsSection({ monthKey, userId, isClosed }: { monthKey: string; userId
   );
 }
 
-// -------------------------------------------------------------
-// 2. INCOME SECTION
-// -------------------------------------------------------------
+// Income
 
 function IncomeSection({ monthKey, userId, isClosed }: { monthKey: string; userId: string; isClosed: boolean }) {
   const { data, today, addCycleIncome, deleteCycleIncome } = useApp();
@@ -1051,9 +1027,7 @@ function IncomeSection({ monthKey, userId, isClosed }: { monthKey: string; userI
   );
 }
 
-// -------------------------------------------------------------
-// 3. HISTORY & AUDIT SECTION
-// -------------------------------------------------------------
+// Payment history
 
 function HistorySection({ monthKey, userId, isClosed }: { monthKey: string; userId: string; isClosed: boolean }) {
   const { data, undoCyclePayment } = useApp();
@@ -1102,9 +1076,7 @@ function HistorySection({ monthKey, userId, isClosed }: { monthKey: string; user
   );
 }
 
-// -------------------------------------------------------------
-// 4. MONTH OVERVIEW & SAFE-TO-SPEND
-// -------------------------------------------------------------
+// Month overview
 
 function MonthOverviewSection({ monthKey, summary }: { monthKey: string; summary: ReturnType<typeof computeMonthSummary> }) {
   const { width } = useWindowDimensions();
@@ -1129,7 +1101,6 @@ function MonthOverviewSection({ monthKey, summary }: { monthKey: string; summary
     <View style={{ gap: 12 }}>
       <SectionTitle>{`Month overview · ${monthKey}`}</SectionTitle>
 
-      {/* Safe to Spend Highlight Card */}
       <Card style={{ backgroundColor: c.card, borderColor: summary.safeToSpendMinor >= 0 ? c.primary : c.danger, borderWidth: 2 }}>
         {summaryCurrency === null ? (
           <Text style={[typography.caption, { color: c.danger, marginBottom: 6 }]}>
@@ -1159,7 +1130,6 @@ function MonthOverviewSection({ monthKey, summary }: { monthKey: string; summary
         </Text>
       </Card>
 
-      {/* Detailed breakdown */}
       <Card>
         <View style={{ gap: 8 }}>
           <View style={rowStyle}>
@@ -1219,7 +1189,6 @@ function MonthOverviewSection({ monthKey, summary }: { monthKey: string; summary
         </View>
       </Card>
 
-      {/* Month Close / Lock Control */}
       <Card>
         <Text style={[typography.cardTitle, { color: c.text, marginBottom: 4 }]}>Month status</Text>
         <Text style={[typography.secondary, { color: c.sub, marginBottom: 10 }]}>

@@ -322,7 +322,7 @@ describe('Google Drive Cloud Backup Feature', () => {
       const pass = 'safe-restore-passphrase-999';
       const cloudPayload = await createEncryptedBackup(original, pass, { random: systemRandom });
 
-      // 1. Decrypt in memory (pure, touches no local storage)
+      // Decrypt in memory (pure, touches no local storage)
       const res = await unlockEncryptedBackup(cloudPayload, pass);
       expect(res.ok).toBe(true);
       if (res.ok) {
@@ -330,11 +330,11 @@ describe('Google Drive Cloud Backup Feature', () => {
         expect(res.data.expenses.length).toBe(original.expenses.length);
       }
 
-      // 2. Wrong passphrase fails without touching storage
+      // Wrong passphrase fails without touching storage
       const wrongRes = await unlockEncryptedBackup(cloudPayload, 'wrong-password-here');
       expect(wrongRes.ok).toBe(false);
 
-      // 3. Corrupt ciphertext fails
+      // Corrupt ciphertext fails
       const corruptRes = await unlockEncryptedBackup(cloudPayload.replace(/"ciphertext":\s*"[^"]+"/, '"ciphertext":"bad"'), pass);
       expect(corruptRes.ok).toBe(false);
     });

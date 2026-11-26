@@ -206,11 +206,11 @@ describe('Save results and keeping typed input on failure', () => {
         'Task added',
       );
 
-      // 1. Error string returned
+      // Error string returned
       expect(saveError).toBe('Could not save to this device. Your latest change may be lost.');
-      // 2. In-memory state rolled back to before (empty tasks)
+      // In-memory state rolled back to before (empty tasks)
       expect(inMemoryData.tasks).toHaveLength(0);
-      // 3. No false success toast remains
+      // No false success toast remains
       expect(lastToast).toBeNull();
     });
 

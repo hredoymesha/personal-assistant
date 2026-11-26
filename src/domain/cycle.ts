@@ -701,7 +701,7 @@ export function computeGroupedMonthSheet(
 
   const groupSummaries: GroupMonthSummary[] = [];
 
-  // 1. Defined custom groups in sortOrder
+  // Custom groups in sortOrder
   for (const g of userGroups) {
     const matchingBills = userBills.filter(
       (b) => b.groupId === g.id || (!b.groupId && b.group && b.group.trim().toLowerCase() === g.name.toLowerCase())
@@ -753,7 +753,7 @@ export function computeGroupedMonthSheet(
     });
   }
 
-  // 2. 'No group' placed at the very end
+  // 'No group' last
   const groupIdsSet = new Set(userGroups.map((g) => g.id));
   const groupNamesSet = new Set(userGroups.map((g) => g.name.toLowerCase()));
   const noGroupBills = userBills.filter((b) => {
@@ -807,7 +807,7 @@ export function computeGroupedMonthSheet(
     overdueBillsCount: ngOverdueCount,
   });
 
-  // 3. Month total reduction directly from group subtotals
+  // Month total straight from the group subtotals
   const monthTotal = {
     totalExpectedMinor: 0,
     totalCarryInMinor: 0,

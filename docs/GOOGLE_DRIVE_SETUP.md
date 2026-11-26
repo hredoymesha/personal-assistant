@@ -52,6 +52,4 @@ Android sign-in has not been tested yet. Google restricts custom URI scheme redi
 
 Create an iOS client for bundle ID `com.assistant.personal` and set `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID`. iOS has not been tested.
 
-## Before calling it done
-
-Drive backup counts as working on a platform only after sign-in, upload, list, download and restore all pass on that platform. Automatic backup stays off by default.
+Automatic backup is off by default.

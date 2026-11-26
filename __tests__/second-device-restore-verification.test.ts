@@ -432,7 +432,7 @@ describe('Verify old backups still restore; second-device restore', () => {
 
   describe('End-to-End Second-Device Restore Simulation', () => {
     it('proves an encrypted backup created on Device A restores completely and identically on Device B', async () => {
-      // 1. Device A: populated production state
+      // Device A: populated production state
       const taskA = makeValidTask('task-a-1', 'Review quarterly financial report', {
         notes: 'Check balance sheet against khata entries',
         dueDate: '2026-11-15',
@@ -513,7 +513,7 @@ describe('Verify old backups still restore; second-device restore', () => {
       expect(typeof backupText).toBe('string');
       expect(backupText.length).toBeGreaterThan(100);
 
-      // 2. Transfer to Device B (fresh phone with completely empty repository and distinct store/vault)
+      // Transfer to Device B (fresh phone with completely empty repository and distinct store/vault)
       const deviceBStore = new MemoryStore();
       const deviceBVault = new MemoryVault();
       const deviceBRepo = new Repository(deviceBStore);
@@ -547,7 +547,7 @@ describe('Verify old backups still restore; second-device restore', () => {
 
       expect(restoreBRes.ok).toBe(true);
 
-      // 3. Assertions on Device B persisted state
+      // Assertions on Device B persisted state
       const deviceBLoaded = await deviceBRepo.load();
       expect(deviceBLoaded.status).toBe('ok');
       expect(deviceBLoaded.data.schemaVersion).toBe(SCHEMA_VERSION);
@@ -566,15 +566,15 @@ describe('Verify old backups still restore; second-device restore', () => {
       expect(deviceBLoaded.data.messMembers).toHaveLength(2);
       expect(deviceBLoaded.data.syncedContacts).toHaveLength(1);
 
-      // 4. Assert Device B staging key is cleaned up
+      // Assert Device B staging key is cleaned up
       expect(await deviceBStore.getItem('aio.data.staging')).toBeNull();
 
-      // 5. Assert Device B can undo the restore using its local snapshot
+      // Assert Device B can undo the restore using its local snapshot
       const allBKeys = await deviceBStore.getAllKeys();
       const snapshotKeys = allBKeys.filter((k) => k.startsWith('aio.restore.snapshot.'));
       expect(snapshotKeys.length).toBeGreaterThanOrEqual(1);
 
-      // 6. Second restore idempotency: restoring again yields identical result
+      // Second restore idempotency: restoring again yields identical result
       const secondRestoreRes = await executeRestoreWithRollback(
         unlockB.data,
         deviceBLoaded.data,

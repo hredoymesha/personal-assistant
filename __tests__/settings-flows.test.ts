@@ -493,16 +493,16 @@ describe('Settings', () => {
         const mockVault = new MockVault();
         const passphrase = 'super-secret-backup-passphrase-1234';
 
-        // 1. Initially disabled
+        // Initially disabled
         expect(await mockVault.get(AUTOBACKUP_PASSPHRASE_KEY)).toBeNull();
 
-        // 2. Enable auto-backup
+        // Enable auto-backup
         await setAutoBackupConfig(true, passphrase, mockVault);
         expect(await mockVault.get(AUTOBACKUP_PASSPHRASE_KEY)).toBe(passphrase);
         const statusOn = await getBackupStatus();
         expect(statusOn.enabled).toBe(true);
 
-        // 3. Disable auto-backup
+        // Disable auto-backup
         await setAutoBackupConfig(false, undefined, mockVault);
         expect(await mockVault.get(AUTOBACKUP_PASSPHRASE_KEY)).toBeNull();
         const statusOff = await getBackupStatus();

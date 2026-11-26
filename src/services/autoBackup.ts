@@ -108,7 +108,7 @@ export async function performAutoBackup(
   const config = deps.config ?? getDriveConfig();
   const fetchFn = deps.fetchFn ?? fetch;
 
-  // 0. Master Feature Flag check
+  // Drive switched off entirely
   if (!isDriveFeatureEnabled(config)) {
     return { status: 'skipped', reason: 'Google Drive backup feature is disabled by feature flag.' };
   }
@@ -116,7 +116,6 @@ export async function performAutoBackup(
   const nowIso = new Date().toISOString();
   await recordBackupStatus({ lastAttempt: nowIso }, store);
 
-  // 1. Check if enabled and retrieve passphrase
   const status = await getBackupStatus(store);
   if (!status.enabled) {
     return { status: 'skipped', reason: 'Automated backup is turned off.' };
@@ -135,7 +134,6 @@ export async function performAutoBackup(
     return { status: 'error', error: reason };
   }
 
-  // 3. Obtain valid Google access token
   const accessToken = await getValidAccessToken(vault, config, fetchFn);
   if (!accessToken) {
     const reason = 'Google Drive is disconnected or authorization expired.';
@@ -143,7 +141,7 @@ export async function performAutoBackup(
     return { status: 'error', error: reason };
   }
 
-  // 4. Encrypt data locally
+  // Encrypt on the device before anything leaves it
   let encryptedText: string;
   try {
     encryptedText = await createEncryptedBackup(data, passphrase, { random: systemRandom });
@@ -153,7 +151,6 @@ export async function performAutoBackup(
     return { status: 'error', error: errorMsg };
   }
 
-  // 5. Upload to Google Drive
   const dateFormatted = nowIso.replace(/[:.]/g, '-');
   const filename = `personal-assistant-backup-${dateFormatted}.json`;
 

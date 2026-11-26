@@ -33,10 +33,10 @@ function MetricBar({ label, value, max, color, valueLabel }: {
   );
 }
 
-function FeatureLink({ title, detail, action, onPress }: { title: string; detail: string; action: string; onPress: () => void }) {
+function FeatureLink({ title, detail, action, onPress, stacked }: { title: string; detail: string; action: string; onPress: () => void; stacked: boolean }) {
   const { c } = useTheme();
   return (
-    <Card style={{ flex: 1, minWidth: 210, gap: 8 }}>
+    <Card style={stacked ? { gap: 8 } : { flex: 1, minWidth: 210, gap: 8 }}>
       <Text style={[typography.cardTitle, { color: c.text }]}>{title}</Text>
       <Text style={[typography.secondary, { color: c.sub }]}>{detail}</Text>
       <Button kind="secondary" label={action} onPress={onPress} />
@@ -157,18 +157,21 @@ export default function Home() {
       <SectionTitle>Explore your data</SectionTitle>
       <View style={{ flexDirection: compact ? 'column' : 'row', flexWrap: 'wrap', gap: 12 }}>
         <FeatureLink
+          stacked={compact}
           title="Tasks"
           detail="Today, upcoming, recurring and completed work"
           action="Open Tasks"
           onPress={() => router.push('/tasks')}
         />
         <FeatureLink
+          stacked={compact}
           title="Money"
           detail="Expenses, savings, debts, wallets and mess"
           action="Open Money"
           onPress={() => router.push('/money')}
         />
         <FeatureLink
+          stacked={compact}
           title="Money Cycle"
           detail="Bills, income, history, month and Daily Sheet"
           action="Open Cycle"

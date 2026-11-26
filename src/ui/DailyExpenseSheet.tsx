@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import { Alert, Pressable, Text, useWindowDimensions, View } from 'react-native';
+import { Platform, Pressable, Text, useWindowDimensions, View } from 'react-native';
+import { notify } from './notify';
 import * as XLSX from 'xlsx';
 import { getDateRangePreset } from '../domain/dates';
 import { dailyExpenseEntriesToCsv, filterDailyExpenseEntries, parseExpenseSheetDate, previewDailyExpenseCsv } from '../domain/expenseSheet';
@@ -86,7 +87,7 @@ export default function DailyExpenseSheet() {
         <Field label="Sheet name" value={newSheetName} onChangeText={setNewSheetName} placeholder="Daily travel expenses" />
         <Button label="Create sheet" onPress={async () => {
           const error = await app.addDailyExpenseSheet({ name: newSheetName.trim() || 'Daily Expenses', currency: app.data.settings.currency, fieldIds: [] });
-          if (error) Alert.alert('Could not create sheet', error);
+          if (error) notify('Could not create sheet', error);
           else setNewSheetName('');
         }} />
       </Card>
@@ -96,8 +97,8 @@ export default function DailyExpenseSheet() {
   async function saveEntry() {
     const parsedDate = parseExpenseSheetDate(date);
     const amountMinor = parseMoney(amount, currency);
-    if (!parsedDate) return Alert.alert('Invalid date', 'Use YYYY-MM-DD, DD/MM/YYYY, Bengali digits, or pick from the calendar.');
-    if (amountMinor === null || amountMinor <= 0) return Alert.alert('Invalid amount', 'Enter a positive amount without too many decimal places.');
+    if (!parsedDate) return notify('Invalid date', 'Use YYYY-MM-DD, DD/MM/YYYY, Bengali digits, or pick from the calendar.');
+    if (amountMinor === null || amountMinor <= 0) return notify('Invalid amount', 'Enter a positive amount without too many decimal places.');
     const payload = {
       sheetId: sheet.id,
       date: parsedDate,
@@ -108,7 +109,7 @@ export default function DailyExpenseSheet() {
       customValues,
     };
     const error = editingId ? await app.updateDailyExpenseEntry(editingId, payload) : await app.addDailyExpenseEntry(payload);
-    if (error) return Alert.alert('Could not save entry', error);
+    if (error) return notify('Could not save entry', error);
     setEditingId(null);
     setPlace('');
     setAmount('');
@@ -145,22 +146,28 @@ export default function DailyExpenseSheet() {
   async function exportCsv() {
     try {
       await exportTextFile(`personal-assistant-daily-expenses-${sheet.id}.csv`, `\uFEFF${dailyExpenseEntriesToCsv(entries, fields)}`, 'text/csv', { moveBeforeShare: true });
-      Alert.alert('CSV export ready', 'The CSV file was created and opened for download or sharing.');
+      notify('CSV export ready', 'The CSV file was created and opened for download or sharing.');
     } catch (error) {
-      Alert.alert('Export failed', error instanceof Error ? error.message : 'Could not export the CSV file.');
+      notify('Export failed', error instanceof Error ? error.message : 'Could not export the CSV file.');
     }
   }
 
-  async function exportFiles() {
+  function sheetReceipts() {
+    const entryIds = new Set(entries.map((entry) => entry.id));
+    return app.data.receiptAttachments.filter((receipt) => receipt.recordType === 'daily_expense' && entryIds.has(receipt.recordId));
+  }
+
+  // One file per button: two exports in a row stacked two share sheets on Android, and
+  // browsers block the second automatic download.
+  async function exportFile(kind: 'excel' | 'pdf') {
     setBusy(true);
+    const name = `personal-assistant-daily-expenses-${sheet.id}.${kind === 'excel' ? 'xlsx' : 'pdf'}`;
     try {
-      const entryIds = new Set(entries.map((entry) => entry.id));
-      const receipts = app.data.receiptAttachments.filter((receipt) => receipt.recordType === 'daily_expense' && entryIds.has(receipt.recordId));
-      await exportDailyExpenseXlsx(`personal-assistant-daily-expenses-${sheet.id}.xlsx`, sheet, entries, fields, receipts);
-      await exportDailyExpensePdf(`personal-assistant-daily-expenses-${sheet.id}.pdf`, sheet, entries, fields, receipts);
-      Alert.alert('Export ready', 'XLSX and PDF files were opened for sharing or download.');
+      if (kind === 'excel') await exportDailyExpenseXlsx(name, sheet, entries, fields, sheetReceipts());
+      else await exportDailyExpensePdf(name, sheet, entries, fields, sheetReceipts());
+      notify(kind === 'excel' ? 'Excel file ready' : 'PDF ready', Platform.OS === 'web' ? 'It is in your downloads.' : 'Choose where to save or share it.');
     } catch (error) {
-      Alert.alert('Export failed', error instanceof Error ? error.message : 'Could not export the sheet.');
+      notify('Export failed', error instanceof Error ? error.message : 'Could not export the sheet.');
     } finally {
       setBusy(false);
     }
@@ -185,7 +192,7 @@ export default function DailyExpenseSheet() {
       }
       setPreview(previewDailyExpenseCsv(text, sheet.currency, entries, fields));
     } catch (error) {
-      Alert.alert('Import failed', error instanceof Error ? error.message : 'Could not read the file.');
+      notify('Import failed', error instanceof Error ? error.message : 'Could not read the file.');
     } finally {
       setBusy(false);
     }
@@ -197,9 +204,9 @@ export default function DailyExpenseSheet() {
     for (const row of rows) {
       if (!row.entry) continue;
       const error = await app.addDailyExpenseEntry({ ...row.entry, sheetId: sheet.id });
-      if (error) return Alert.alert('Import stopped', error);
+      if (error) return notify('Import stopped', error);
     }
-    Alert.alert('Import complete', `${rows.length} added, ${preview.length - rows.length} skipped.`);
+    notify('Import complete', `${rows.length} added, ${preview.length - rows.length} skipped.`);
     setPreview(null);
   }
 
@@ -210,17 +217,16 @@ export default function DailyExpenseSheet() {
       ? newFieldOptions.split(',').map((s) => s.trim()).filter(Boolean)
       : [];
     if (newFieldType === 'choice' && options.length === 0) {
-      return Alert.alert('Options required', 'Enter at least one option separated by commas for choice fields.');
+      return notify('Options required', 'Enter at least one option separated by commas for choice fields.');
     }
     const error = await app.addDailyExpenseField({ name, type: newFieldType, options, required: false });
-    if (error) return Alert.alert('Could not add field', error);
+    if (error) return notify('Could not add field', error);
     setNewFieldName('');
     setNewFieldOptions('');
   }
 
   return (
     <View style={{ gap: space.md }}>
-      {/* Sheet Selector Header */}
       <Card>
         <SectionTitle action={<Button size="compact" label="New sheet" onPress={() => setShowNewSheet((value) => !value)} />}>Daily Expense Sheet</SectionTitle>
         <Text style={[typography.secondary, { color: c.sub }]}>Sheet: {sheet.name}</Text>
@@ -229,7 +235,7 @@ export default function DailyExpenseSheet() {
             <Field label="New sheet name" value={newSheetName} onChangeText={setNewSheetName} placeholder="November travel" />
             <Button size="compact" label="Create" onPress={async () => {
               const error = await app.addDailyExpenseSheet({ name: newSheetName.trim() || 'Daily Expenses', currency: app.data.settings.currency, fieldIds: [] });
-              if (error) Alert.alert('Could not create sheet', error);
+              if (error) notify('Could not create sheet', error);
               else { setNewSheetName(''); setShowNewSheet(false); }
             }} />
           </View>
@@ -241,11 +247,9 @@ export default function DailyExpenseSheet() {
         </View>
       </Card>
 
-      {/* Add / Edit Entry Form */}
       <Card>
         <SectionTitle>{editingId ? 'Edit entry' : 'Add entry'}</SectionTitle>
 
-        {/* Date Field with Calendar Toggle & Quick Presets */}
         <View style={{ gap: space.xs }}>
           <Field label="Date - YYYY-MM-DD or Bengali digits" value={date} onChangeText={setDate} placeholder="2026-11-15" />
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: space.xs }}>
@@ -267,7 +271,6 @@ export default function DailyExpenseSheet() {
           ) : null}
         </View>
 
-        {/* Place / Category Field with Quick Suggestions */}
         <View style={{ gap: space.xs }}>
           <Field label="Place / category" value={place} onChangeText={setPlace} placeholder="Lunch, Rickshaw, Groceries" />
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: space.xs }}>
@@ -296,14 +299,11 @@ export default function DailyExpenseSheet() {
           </View>
         </View>
 
-        {/* Amount & Currency */}
         <Field label={`Amount - ${currency}`} value={amount} onChangeText={setAmount} keyboardType="decimal-pad" placeholder="456.5" />
         <Chips label="Currency" options={USER_CURRENCIES} value={currency} onChange={setCurrency} />
 
-        {/* Dedicated Note / Memo Field */}
         <Field label="Note / memo - optional" value={note} onChangeText={setNote} placeholder="e.g. Canteen lunch - shared with Fahim" />
 
-        {/* Dynamic Custom Columns */}
         {fields.map((field) => {
           const val = customValues[field.id] ?? '';
           if (field.type === 'choice' && field.options.length > 0) {
@@ -357,7 +357,6 @@ export default function DailyExpenseSheet() {
         </View>
       </Card>
 
-      {/* Custom Columns Management Card */}
       <Card>
         <SectionTitle>Custom columns</SectionTitle>
         <Text style={[typography.secondary, { color: c.sub, marginBottom: space.sm }]}>
@@ -396,11 +395,9 @@ export default function DailyExpenseSheet() {
         ) : null}
       </Card>
 
-      {/* Filter and Export Card */}
       <Card>
         <SectionTitle>Filter and export</SectionTitle>
 
-        {/* Quick Range Presets */}
         <View style={{ gap: space.xs, marginBottom: space.sm }}>
           <Text style={[typography.secondary, { fontWeight: '600', color: c.text }]}>Date range presets:</Text>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
@@ -438,7 +435,6 @@ export default function DailyExpenseSheet() {
           </View>
         </View>
 
-        {/* From & To Date Pickers */}
         <View style={{ flexDirection: 'row', gap: 8 }}>
           <View style={{ flex: 1 }}>
             <Field label="From" value={from} onChangeText={setFrom} placeholder="YYYY-MM-DD" />
@@ -477,7 +473,6 @@ export default function DailyExpenseSheet() {
           />
         ) : null}
 
-        {/* Keyword Search Filter */}
         <View style={{ marginTop: space.md }}>
           <Field
             label="Search by place, note or custom value"
@@ -487,17 +482,16 @@ export default function DailyExpenseSheet() {
           />
         </View>
 
-        {/* Display Filtered Totals */}
         <Text style={[typography.cardTitle, { color: c.text, marginVertical: space.sm }]}>
           Totals: {totalByCurrency.map(([key, value]) => formatMoney(value, key)).join(' / ') || '—'}
           <Text style={[typography.secondary, { color: c.sub, fontWeight: '400' }]}> - {entries.length} entries</Text>
         </Text>
 
-        {/* Export and Import Actions */}
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-          <Button size="compact" label="Export CSV" onPress={() => void exportCsv()} />
-          <Button size="compact" label={busy ? 'Working…' : 'Export XLSX + PDF'} onPress={() => void exportFiles()} disabled={busy} />
-          <Button size="compact" kind="secondary" label={busy ? 'Working…' : 'Import CSV/XLSX'} onPress={() => void importFile()} disabled={busy} />
+          <Button size="compact" label="Export CSV" style={{ flexGrow: 1, minWidth: 120 }} onPress={() => void exportCsv()} />
+          <Button size="compact" label={busy ? 'Working…' : 'Export Excel'} style={{ flexGrow: 1, minWidth: 120 }} onPress={() => void exportFile('excel')} disabled={busy} />
+          <Button size="compact" label={busy ? 'Working…' : 'Export PDF'} style={{ flexGrow: 1, minWidth: 120 }} onPress={() => void exportFile('pdf')} disabled={busy} />
+          <Button size="compact" kind="secondary" label={busy ? 'Working…' : 'Import CSV or Excel'} style={{ flexGrow: 1, minWidth: 160 }} onPress={() => void importFile()} disabled={busy} />
         </View>
 
         {preview ? (
@@ -511,7 +505,6 @@ export default function DailyExpenseSheet() {
         ) : null}
       </Card>
 
-      {/* Render Entries Grouped by Date */}
       {groupedEntries.length === 0 ? (
         <EmptyState title="No daily entries found" hint="Try adjusting your date range or search query, or add an entry above." />
       ) : (

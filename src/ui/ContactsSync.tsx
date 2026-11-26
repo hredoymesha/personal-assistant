@@ -170,7 +170,7 @@ export default function ContactsSync() {
     setMessage(null);
 
     try {
-      // 1. Apply-Time Revalidation against live current cache
+      // The cache may have changed since the preview, so check again
       const freshPlan = planContactImport(app.data.syncedContacts, rawFetched);
 
       // Check candidate-by-candidate if status, target ID, diffs, or counts drifted from what was previewed
@@ -276,7 +276,6 @@ export default function ContactsSync() {
   return (
     <ExpandableSection title="Device contacts">
 
-      {/* 1. Platform-Specific Action Header */}
       {Platform.OS === 'web' ? (
         <Card>
           <Text style={[typography.body, { color: c.sub }]}>
@@ -302,12 +301,10 @@ export default function ContactsSync() {
         </Card>
       )}
 
-      {/* Global / Operation Message */}
       {message ? (
         <Banner text={message.text} tone={message.tone} />
       ) : null}
 
-      {/* 2. Native Import Staging & Review View */}
       {stagedPlan ? (
         <Card>
           <Text style={{ color: c.text, fontWeight: '700', fontSize: 16, marginBottom: 4 }}>
@@ -324,7 +321,6 @@ export default function ContactsSync() {
             </Text>
           ) : null}
 
-          {/* Bulk Selection Controls */}
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
             <Button
               kind="secondary"
@@ -348,14 +344,13 @@ export default function ContactsSync() {
             ) : null}
           </View>
 
-          {/* Candidate Search */}
           <Field
             label="Search candidates"
             value={candidateFilter}
             onChangeText={setCandidateFilter}
           />
 
-          {/* Candidates List Preview (Windowed to 25 items for smooth rendering) */}
+          {/* Only the first 25 are drawn; longer lists were slow to render. */}
           <View style={{ marginTop: 8 }}>
             {filteredCandidates.slice(0, 25).map((cand) => {
               const isSelected = selectedIds.has(cand.contact.id);
@@ -434,7 +429,6 @@ export default function ContactsSync() {
             ) : null}
           </View>
 
-          {/* Staging Footer Actions */}
           <View style={{ flexDirection: 'row', gap: 8, marginTop: 12 }}>
             <Button
               label={saving ? 'Saving…' : `Import ${selectedIds.size} selected`}
@@ -464,7 +458,6 @@ export default function ContactsSync() {
         </Card>
       ) : null}
 
-      {/* 3. Shared Cached Contacts Viewer (Visible on BOTH Web and Native) */}
       <Card>
         <Text style={{ color: c.text, fontWeight: '700', fontSize: 15, marginBottom: 4 }}>
           {contacts.length} cached contacts

@@ -1,13 +1,14 @@
 import * as Location from 'expo-location';
 import * as Linking from 'expo-linking';
 import { Alert, Platform, Share, Text, View } from 'react-native';
+import { confirmAction, notify } from './notify';
 import { Button, Card, ExpandableSection } from './components';
 import { type as typography, useTheme } from './theme';
 
 const EMERGENCY_NUMBER = '999';
 
 function showMessage(title: string, message: string): void {
-  Alert.alert(title, message);
+  notify(title, message);
 }
 
 async function callEmergencyServices(): Promise<void> {
@@ -53,11 +54,13 @@ export function EmergencySOSButton() {
       size="compact"
       label="Call 999"
       accessibilityLabel="Call 999"
-      onPress={() => Alert.alert('Emergency SOS', 'Choose an action. Personal Assistant cannot confirm that emergency services received your location.', [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Call 999', onPress: () => { void callEmergencyServices(); } },
-        { text: 'Share location', onPress: () => { void shareCurrentLocation(); } },
-      ])}
+      onPress={() => Platform.OS === 'web'
+        ? confirmAction('Emergency SOS', 'Open your phone app to call 999?', 'Call 999', () => { void callEmergencyServices(); })
+        : Alert.alert('Emergency SOS', 'Choose an action. Personal Assistant cannot confirm that emergency services received your location.', [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Call 999', onPress: () => { void callEmergencyServices(); } },
+          { text: 'Share location', onPress: () => { void shareCurrentLocation(); } },
+        ])}
       style={{ borderColor: c.danger, minWidth: 88 }}
     />
   );

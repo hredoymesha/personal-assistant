@@ -154,7 +154,6 @@ export async function runKdfBenchmark(
       percent: Math.round((idx / targets.length) * 100),
     });
 
-    // 1. Pure KDF timing
     let pureKdfMs: number | undefined;
     try {
       const pw = utf8Encode(passphrase);
@@ -186,7 +185,6 @@ export async function runKdfBenchmark(
     // Yield to JS event loop between steps
     await new Promise((resolve) => setTimeout(resolve, 50));
 
-    // 2. Encrypt 1 MB timing
     let encrypt1MbMs: number | undefined;
     let encryptedText: string | undefined;
     try {
@@ -213,7 +211,6 @@ export async function runKdfBenchmark(
     // Yield to JS event loop
     await new Promise((resolve) => setTimeout(resolve, 50));
 
-    // 3. Decrypt 1 MB timing & archive verification
     let decrypt1MbMs: number | undefined;
     let archiveValid = false;
     try {
@@ -256,7 +253,6 @@ export async function runKdfBenchmark(
     await new Promise((resolve) => setTimeout(resolve, 100));
   }
 
-  // 4. Measure cancellation latency
   let cancellation: CancellationBenchmarkResult | undefined;
   if (!options.shouldCancel?.()) {
     try {

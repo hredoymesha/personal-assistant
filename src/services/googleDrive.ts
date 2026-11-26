@@ -548,8 +548,7 @@ export async function enforceRetentionPolicy(
     return { kept: files.length, deleted: 0 };
   }
 
-  // Safety rule: Never delete the latest successful backup (index 0 is protected)
-  // Safety rule: Only delete files that were created by Personal Assistant (owner === 'aio')
+  // Keep the newest backup (index 0) and only touch files this app created (owner === 'aio')
   const candidates = files.slice(effectiveMax);
   const toDelete = candidates.filter((f) => f.owner === 'aio');
 

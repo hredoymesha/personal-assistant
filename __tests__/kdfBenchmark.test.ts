@@ -17,7 +17,7 @@ import type { RandomSource } from '../src/crypto/random';
 describe('KDF speed check', () => {
   const testRandom: RandomSource = { bytes: (n) => new Uint8Array(randomBytes(n)) };
 
-  // 1. Target parameter bounds validation
+  // Target parameter bounds validation
   it('conforms to SCRYPT_KDF_BOUNDS for all 4 benchmark targets', () => {
     expect(BENCHMARK_TARGETS).toHaveLength(4);
     const expectedNs = [16384, 32768, 65536, 131072];
@@ -35,7 +35,7 @@ describe('KDF speed check', () => {
     }
   });
 
-  // 2. Synthetic payload generation
+  // Synthetic payload generation
   it('generates valid synthetic JSON payload of the requested size without personal data', () => {
     const payload = generateBenchmarkPayload(10_000);
     expect(payload.length).toBeGreaterThanOrEqual(9_900);
@@ -49,7 +49,7 @@ describe('KDF speed check', () => {
     expect(payload).not.toContain('+880');
   });
 
-  // 3. encryptBackup kdfParams extension and boundary enforcement
+  // encryptBackup kdfParams extension and boundary enforcement
   it('encryptBackup accepts kdfParams within bounds and decrypts cleanly', async () => {
     const random = testRandom;
     const plaintext = '{"synthetic":true,"test":"kdfParams"}';
@@ -77,7 +77,7 @@ describe('KDF speed check', () => {
     }
   });
 
-  // 4. encryptBackup rejects unsafe or out-of-bounds kdfParams
+  // encryptBackup rejects unsafe or out-of-bounds kdfParams
   it('encryptBackup rejects out-of-bounds KDF parameters', async () => {
     const random = testRandom;
     const plaintext = 'test';
@@ -111,7 +111,7 @@ describe('KDF speed check', () => {
     ).rejects.toThrow('Requested KDF parameters violate security bounds.');
   });
 
-  // 5. Default KDF preservation
+  // Default KDF preservation
   it('preserves DEFAULT_KDF when kdfParams is omitted', async () => {
     const random = testRandom;
     const encrypted = await encryptBackup('data', 'valid-passphrase-12345', {
@@ -127,7 +127,7 @@ describe('KDF speed check', () => {
     }
   });
 
-  // 6. Cancellation measurement helper
+  // Cancellation measurement helper
   it('measures cancellation latency when aborted during derivation', async () => {
     const random = testRandom;
     const cancelRes = await measureCancellationLatency(16384, random);
@@ -160,7 +160,7 @@ describe('KDF speed check', () => {
     expect(progressLog.length).toBeGreaterThan(0);
   });
 
-  // 8. Cooperative cancellation in runKdfBenchmark
+  // Cooperative cancellation in runKdfBenchmark
   it('halts benchmark run when shouldCancel returns true', async () => {
     const random = testRandom;
     let cancelCalled = false;

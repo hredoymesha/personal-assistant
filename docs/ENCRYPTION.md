@@ -25,7 +25,4 @@ JSON and CSV exports are plain text. Anyone who gets the file can read it. Use a
 - The working data inside the app: on a phone it's in the app's private storage, in a browser it's in localStorage. The app doesn't add its own encryption there.
 - Plain-text exports, as above.
 
-## Not tested yet
-
-- How long scrypt takes on a range of phones. It's usually 5 to 30 seconds, but that's from a small sample.
-- Sharing and picking backup files on many different Android phones.
+Key derivation takes a few seconds on a phone, longer on older ones.

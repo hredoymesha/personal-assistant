@@ -1,6 +1,6 @@
 import { Asset } from 'expo-asset';
 import { File } from 'expo-file-system';
-import type { PDFFont, PDFPage } from 'pdf-lib';
+import type { PDFDocument as PDFDocumentType, PDFFont, PDFPage } from 'pdf-lib';
 import * as XLSX from 'xlsx';
 import { formatMoney, toDecimalString } from '../domain/money';
 import type { DailyExpenseEntry, DailyExpenseField, DailyExpenseSheet, ReceiptAttachment } from '../domain/types';
@@ -85,11 +85,21 @@ export async function exportDailyExpenseXlsx(
   }
   XLSX.utils.book_append_sheet(workbook, worksheet, worksheetName(sheet.name));
   if (receipts.length > 0) {
+    // A cell holds at most 32,767 characters, so a photo can't go in as text. The PDF
+    // export carries the images; this tab lists which entry each receipt belongs to.
+    const byId = new Map(entries.map((entry) => [entry.id, entry]));
     const receiptRows = [
-      ['Record ID', 'File name', 'MIME type', 'Size bytes', 'Data base64'],
-      ...receipts.map((receipt) => [receipt.recordId, receipt.fileName, receipt.mimeType, String(receipt.sizeBytes), receipt.dataBase64]),
+      ['Date', 'Place', 'File name', 'Type', 'Size (KB)'],
+      ...receipts.map((receipt) => {
+        const entry = byId.get(receipt.recordId);
+        return [entry?.date ?? '', entry?.category ?? '', receipt.fileName, receipt.mimeType, String(Math.ceil(receipt.sizeBytes / 1024))];
+      }),
+      [],
+      ['Receipt images are included in the PDF export and in encrypted backups.'],
     ];
-    XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet(receiptRows), 'Receipts');
+    const receiptSheet = XLSX.utils.aoa_to_sheet(receiptRows);
+    receiptSheet['!cols'] = [{ wch: 14 }, { wch: 28 }, { wch: 36 }, { wch: 16 }, { wch: 10 }];
+    XLSX.utils.book_append_sheet(workbook, receiptSheet, 'Receipts');
   }
   const bytes = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' }) as ArrayBuffer;
   await exportBinaryFile(filename, new Uint8Array(bytes), XLSX_MIME);
@@ -126,10 +136,24 @@ export async function exportDailyExpensePdf(
   fields: DailyExpenseField[],
   receipts: ReceiptAttachment[] = [],
 ): Promise<void> {
-  const [{ PDFDocument, rgb }, fontkit] = await Promise.all([import('pdf-lib'), import('@pdf-lib/fontkit')]);
+  const [pdfLib, fontkit] = await Promise.all([import('pdf-lib'), import('@pdf-lib/fontkit')]);
+  const bytes = await renderDailyExpensePdf(pdfLib, fontkit, await loadBengaliFont(), sheet, entries, fields, receipts);
+  await exportBinaryFile(filename, bytes, 'application/pdf');
+}
+
+export async function renderDailyExpensePdf(
+  { PDFDocument, rgb }: typeof import('pdf-lib'),
+  fontkit: Parameters<PDFDocumentType['registerFontkit']>[0],
+  fontBytes: Uint8Array,
+  sheet: DailyExpenseSheet,
+  entries: DailyExpenseEntry[],
+  fields: DailyExpenseField[],
+  receipts: ReceiptAttachment[] = [],
+): Promise<Uint8Array> {
   const pdf = await PDFDocument.create();
   pdf.registerFontkit(fontkit);
-  const font = await pdf.embedFont(await loadBengaliFont(), { subset: true });
+  // Subsetting this font with pdf-lib drops glyph outlines and leaves text invisible, so embed it whole.
+  const font = await pdf.embedFont(fontBytes, { subset: false });
   const sorted = [...entries].sort((a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id));
   const pages: PDFPage[] = [];
   const labels = ['Date', 'Place', 'Amount', 'Currency', 'Note', ...fields.map((field) => field.name)];
@@ -162,7 +186,7 @@ export async function exportDailyExpensePdf(
       drawHeader();
     }
     if (currentDate && currentDate !== entry.date) {
-      page.drawRectangle({ x: margin - 4, y: y - 5, width: 523, height: 20, color: rgb(0.95, 0.95, 0.95) });
+      page.drawRectangle({ x: margin - 4, y: y - 5, width: 770, height: 20, color: rgb(0.95, 0.95, 0.95) });
       drawText(page, font, `Total for ${currentDate}`, margin, y, 9);
       drawText(page, font, dailyTotals(sorted.filter((item) => item.date === currentDate)).join(' / '), 350, y, 9);
       y -= 24;
@@ -192,12 +216,14 @@ export async function exportDailyExpensePdf(
   drawText(page, font, dailyTotals(sorted).join(' / '), 350, y, 9);
   if (receipts.length > 0) {
     page = pdf.addPage([842, 595]);
+    pages.push(page);
     y = 555;
     drawText(page, font, 'Receipts', margin, y, 16);
     y -= 28;
     for (const receipt of receipts) {
       if (y < 110) {
         page = pdf.addPage([842, 595]);
+        pages.push(page);
         y = 555;
       }
       drawText(page, font, `${receipt.fileName} - ${receipt.mimeType} - ${receipt.sizeBytes} bytes`, margin, y, 9);
@@ -219,5 +245,5 @@ export async function exportDailyExpensePdf(
     }
   }
   pages.forEach((item, index) => drawText(item, font, `Page ${index + 1} of ${pages.length}`, 730, 24, 8, rgb(0.35, 0.35, 0.35)));
-  await exportBinaryFile(filename, new Uint8Array(await pdf.save()), 'application/pdf');
+  return new Uint8Array(await pdf.save());
 }

@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Alert, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
+import { notify } from './notify';
 import { base64Encode } from '../crypto/bytes';
 import type { ReceiptRecordType } from '../domain/types';
 import { pickReceiptFile } from '../services/files';
@@ -30,9 +31,9 @@ export function ReceiptAttachments({ recordType, recordId }: { recordType: Recei
         sizeBytes: picked.bytes.byteLength,
         dataBase64: base64Encode(picked.bytes),
       });
-      if (error) Alert.alert('Receipt not attached', error);
+      if (error) notify('Receipt not attached', error);
     } catch (error) {
-      Alert.alert('Receipt not attached', error instanceof Error ? error.message : 'Could not read the selected file.');
+      notify('Receipt not attached', error instanceof Error ? error.message : 'Could not read the selected file.');
     } finally {
       setBusy(false);
     }

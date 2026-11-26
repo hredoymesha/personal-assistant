@@ -142,7 +142,7 @@ describe('Google Drive backup safety', () => {
 
       let currentDeviceState: AppData = localDeviceData;
 
-      // 1. Successful restore
+      // Successful restore
       const restoreRes = await executeRestoreWithRollback(
         restoredIncomingData,
         currentDeviceState,
@@ -153,17 +153,17 @@ describe('Google Drive backup safety', () => {
       expect(restoreRes.ok).toBe(true);
       expect(currentDeviceState).toEqual(restoredIncomingData);
 
-      // 2. Local snapshot is preserved for undo
+      // Local snapshot is preserved for undo
       const snapshot = await getPreRestoreSnapshot(store as any, vault);
       expect(snapshot).not.toBeNull();
       expect(snapshot?.data).toEqual(localDeviceData);
 
-      // 3. User clicks "Undo restore": reapplies snapshot.data
+      // User clicks "Undo restore": reapplies snapshot.data
       currentDeviceState = snapshot!.data;
       expect(currentDeviceState).toEqual(localDeviceData);
       await clearPreRestoreSnapshot(store as any, vault);
 
-      // 4. Snapshot and vault key are cleared
+      // Snapshot and vault key are cleared
       expect(await getPreRestoreSnapshot(store as any, vault)).toBeNull();
       expect(await store.getItem(RESTORE_SNAPSHOT_KEY)).toBeNull();
       expect(await vault.get(RESTORE_SNAPSHOT_VAULT_KEY)).toBeNull();
@@ -226,14 +226,14 @@ describe('Google Drive backup safety', () => {
 
       await createPreRestoreSnapshot(testData, store as any, vault);
 
-      // 1. Simulate snapshot on another device or wiped keystore: wipe all keys from vault
+      // Simulate snapshot on another device or wiped keystore: wipe all keys from vault
       vault.data.clear();
 
       // Must return null cleanly without throwing
       const resultWithoutKey = await getPreRestoreSnapshot(store as any, vault);
       expect(resultWithoutKey).toBeNull();
 
-      // 2. Re-create snapshot to test tampered / corrupted ciphertext in store
+      // Re-create snapshot to test tampered / corrupted ciphertext in store
       const id = await createPreRestoreSnapshot(testData, store as any, vault);
       const sKey = snapshotStoreKey(id);
       const validStored = await store.getItem(sKey);
@@ -316,12 +316,12 @@ describe('Google Drive backup safety', () => {
         return null;
       };
 
-      // 1. Initial restore: captures initialLocalData as 'pre-restore'
+      // Initial restore: captures initialLocalData as 'pre-restore'
       const restoreRes = await executeRestoreWithRollback(restoredIncomingData, currentDeviceData, applyFn, store as any, vault);
       expect(restoreRes.ok).toBe(true);
       expect(currentDeviceData.tasks[0].title).toBe('CLOUD_RESTORED_TASK_ABC');
 
-      // 2. Perform UNDO: captures restoredIncomingData as 'pre-undo' and applies initialLocalData
+      // Perform UNDO: captures restoredIncomingData as 'pre-undo' and applies initialLocalData
       const undoSnapshot = await getPreRestoreSnapshot(store as any, vault);
       expect(undoSnapshot).not.toBeNull();
       expect(undoSnapshot?.kind).toBe('pre-restore');
@@ -330,7 +330,7 @@ describe('Google Drive backup safety', () => {
       expect(undoRes.ok).toBe(true);
       expect(currentDeviceData).toEqual(initialLocalData);
 
-      // 3. Perform REDO: retrieves latest snapshot ('pre-undo') and reapplies restoredIncomingData
+      // Perform REDO: retrieves latest snapshot ('pre-undo') and reapplies restoredIncomingData
       const redoTargetSnapshot = await getPreRestoreSnapshot(store as any, vault);
       expect(redoTargetSnapshot).not.toBeNull();
       expect(redoTargetSnapshot?.kind).toBe('pre-undo');

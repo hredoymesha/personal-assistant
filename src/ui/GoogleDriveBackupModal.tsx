@@ -418,7 +418,6 @@ export function GoogleDriveBackupSection({
         ) : (
           <View style={{ marginTop: 8 }}>
             {authError ? <Banner tone="danger" text={authError} /> : null}
-            {/* Connection Status */}
             <View style={[st.rowBetween, { marginVertical: 6 }]}>
               <Text style={[type.secondary, { color: c.text }]}>
                 Status: {isConnected ? '✓ Connected to Google Drive' : 'Disconnected'}
@@ -436,7 +435,6 @@ export function GoogleDriveBackupSection({
 
             {isConnected ? (
               <>
-                {/* Back up now button */}
                 {!showUploadForm ? (
                   <Button
                     label="Back up to Drive now"
@@ -487,7 +485,6 @@ export function GoogleDriveBackupSection({
                   </View>
                 )}
 
-                {/* Auto-backup settings */}
                 <View style={[st.subCard, { borderColor: c.border, marginTop: 12 }]}>
                   <View style={st.rowBetween}>
                     <View style={{ flex: 1, paddingRight: 8 }}>
@@ -527,7 +524,6 @@ export function GoogleDriveBackupSection({
                   </Text>
                 </View>
 
-                {/* Backup Status indicator */}
                 <View style={{ marginTop: 8, paddingHorizontal: 4 }}>
                   <Text style={[type.caption, { color: c.sub }]}>
                     Last attempt: {backupStatus.lastAttempt ? new Date(backupStatus.lastAttempt).toLocaleString() : 'Never'}
@@ -540,7 +536,6 @@ export function GoogleDriveBackupSection({
                   ) : null}
                 </View>
 
-                {/* Cloud Backups List */}
                 <View style={{ marginTop: 12 }}>
                   <View style={st.rowBetween}>
                     <Text style={[type.secondary, { color: c.text, fontWeight: '700' }]}>
@@ -593,7 +588,6 @@ export function GoogleDriveBackupSection({
         )}
       </Card>
 
-      {/* Restore Passphrase Modal */}
       {fileToRestoreText ? (
         <Card>
           <Text style={[type.cardTitle, { color: c.text, marginBottom: 4 }]}>
@@ -629,7 +623,6 @@ export function GoogleDriveBackupSection({
         </Card>
       ) : null}
 
-      {/* Cloud File Deletion Confirmation Modal */}
       {fileToDelete ? (
         <Card>
           <Text style={[type.cardTitle, { color: c.danger, fontWeight: '800', marginBottom: 6 }]}>

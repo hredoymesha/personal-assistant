@@ -110,18 +110,18 @@ describe('cross-currency rejection at compile time and runtime', () => {
     const bdtUnion: MultiCurrencyAmount = toCurrencyAmount(100, 'BDT');
     const usdUnion: MultiCurrencyAmount = toCurrencyAmount(200, 'USD');
 
-    // 1. Specific union variables are rejected at compile time due to NoInfer<C>
+    // Specific union variables are rejected at compile time due to NoInfer<C>
     // @ts-expect-error compile-time guard rejects mixed narrowed union operands
     expect(() => addCurrencyAmounts(bdtUnion, usdUnion)).toThrow('Cannot add amounts in different currencies');
 
-    // 2. Un-narrowed union parameter types are ALSO rejected at compile time because CurrencyMinor is invariant
+    // Un-narrowed union parameter types are ALSO rejected at compile time because CurrencyMinor is invariant
     function addDynamicUnionAmounts(left: MultiCurrencyAmount, right: MultiCurrencyAmount) {
       // @ts-expect-error compile-time guard rejects union types because CurrencyMinor brand is invariant
       return addCurrencyAmounts(left, right);
     }
     expect(() => addDynamicUnionAmounts(bdtUnion, usdUnion)).toThrow('Cannot add amounts in different currencies');
 
-    // 3. If types are cast or bypassed, runtime guard throws on mismatch
+    // If types are cast or bypassed, runtime guard throws on mismatch
     const bypassedUsd = usdUnion as unknown as CurrencyAmount<'BDT'>;
     expect(() => addCurrencyAmounts(toCurrencyAmount(100, 'BDT'), bypassedUsd)).toThrow(
       'Cannot add amounts in different currencies',

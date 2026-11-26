@@ -16,7 +16,6 @@ export interface Palette {
 }
 
 // Text/background pairs chosen for >= 4.5:1 contrast (WCAG AA) in both themes.
-// Refined, mature, professional slate foundation with indigo accents.
 export const light: Palette = {
   bg: '#F8FAFC',
   card: '#FFFFFF',

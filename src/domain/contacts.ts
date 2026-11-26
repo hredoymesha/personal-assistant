@@ -82,7 +82,6 @@ export function planContactImport(
         continue;
       }
 
-      // Fields are not identical. Enforce strict identity rules.
       const sameName =
         matchById.fullName.trim().toLowerCase() === inc.fullName.trim().toLowerCase();
 
@@ -91,7 +90,7 @@ export function planContactImport(
       const sharedPhoneCount = incPhones.filter((p) => matchPhones.includes(p)).length;
       const hasSharedPhone = sharedPhoneCount > 0;
 
-      // Guard 1: Name-only match with disjoint phones or empty phones
+      // Same name but no phone in common (or no phones): not proof of the same person
       if (sameName && !hasSharedPhone) {
         candidates.push({
           contact: inc,
@@ -103,7 +102,7 @@ export function planContactImport(
         continue;
       }
 
-      // Guard 2: Different name (ID collision or shared phone)
+      // Different name under the same ID, or a shared phone line
       if (!sameName) {
         candidates.push({
           contact: inc,
@@ -115,7 +114,7 @@ export function planContactImport(
         continue;
       }
 
-      // Verified Update: sameName is TRUE AND hasSharedPhone is TRUE
+      // Same name and at least one shared phone: safe to update
       const changes: string[] = [];
       if (JSON.stringify(matchById.phones) !== JSON.stringify(inc.phones)) changes.push('phones');
       if (JSON.stringify(matchById.emails) !== JSON.stringify(inc.emails)) changes.push('emails');
@@ -129,8 +128,7 @@ export function planContactImport(
       });
       updateCount++;
     } else {
-      // No ID match. Check for cross-device match by content:
-      // Requires BOTH identical full name AND identical non-empty phone set
+      // No ID match. Across devices, accept only an identical name and identical phone set.
       let contentMatch: SyncedContact | undefined;
       if (inc.fullName.trim() && inc.phones.length > 0) {
         const incPhones = inc.phones.map(cleanPhone).filter(Boolean).sort().join(',');

@@ -102,5 +102,4 @@ export function getRetentionCopy(config: DriveConfig = currentConfig): string {
   return `Older backups are removed automatically (keeps ${ret.maxBackups}).`;
 }
 
-// Re-export central KDF bounds for convenience and centralized reference
 export { SCRYPT_KDF_BOUNDS, type ScryptKdfBounds } from '../crypto/backup';

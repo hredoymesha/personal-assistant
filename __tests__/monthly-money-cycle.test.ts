@@ -117,7 +117,7 @@ describe('Monthly Money Cycle', () => {
       expect(initial.remainingMinor).toBe(100000);
       expect(initial.status).toBe('upcoming');
 
-      // 1. Mark paid
+      // Mark paid
       const newPayment: CyclePayment = {
         id: 'pay-1',
         userId: userIdA,
@@ -135,7 +135,7 @@ describe('Monthly Money Cycle', () => {
       expect(afterPaid.totalPaidMinor).toBe(100000);
       expect(afterPaid.status).toBe('paid');
 
-      // 2. Undo paid: remove payment
+      // Undo paid: remove payment
       payments = payments.filter((p) => p.id !== 'pay-1');
 
       const afterUndo = computeBillMonthState(baseBill, '2026-11', payments, null, '2026-11-02' as any);
@@ -930,7 +930,7 @@ describe('Monthly Money Cycle', () => {
         sample: false,
       };
 
-      // 1. Partial debt repayment (৳500 of ৳1,200)
+      // Partial debt repayment (৳500 of ৳1,200)
       const pay1 = applyDebtPayment([initialDebt], 'debt-ext-1', 50000);
       expect(pay1.ok).toBe(true);
       if (pay1.ok) {
@@ -949,7 +949,7 @@ describe('Monthly Money Cycle', () => {
         expect(state.status).toBe('paid');
         expect(state.remainingMinor).toBe(0);
 
-        // 2. Full debt repayment (remaining ৳700)
+        // Full debt repayment (remaining ৳700)
         const pay2 = applyDebtPayment(pay1.debts, 'debt-ext-1', 70000);
         expect(pay2.ok).toBe(true);
         if (pay2.ok) {

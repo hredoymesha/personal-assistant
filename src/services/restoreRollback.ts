@@ -168,10 +168,9 @@ export async function createPreRestoreSnapshot(
   const sStoreKey = snapshotStoreKey(id);
   const sVaultKey = snapshotVaultKey(id);
 
-  // 1. Write the symmetric key to device secure hardware vault
+  // Key goes to the secure store, the encrypted blob to normal storage
   await vault.set(sVaultKey, base64Encode(key), options);
 
-  // 2. Write the encrypted blob to key-value storage
   const payload: EncryptedRestoreSnapshotPayload = {
     version: 1,
     id,
@@ -188,8 +187,7 @@ export async function createPreRestoreSnapshot(
     throw err;
   }
 
-  // 3. IMMEDIATE WRITE-THEN-SWAP VERIFICATION:
-  // Must verify decrypt round-trip before committing to metadata ring or pruning old snapshots
+  // Read it back and decrypt it before touching the index or pruning older snapshots
   try {
     const readVault = await vault.get(sVaultKey);
     const readStore = await store.getItem(sStoreKey);
@@ -214,7 +212,7 @@ export async function createPreRestoreSnapshot(
     throw verifyErr;
   }
 
-  // 4. RING METADATA UPDATE & CAPPING (MAX 3):
+  // Update the index, keeping at most three snapshots
   try {
     const rawMeta = await store.getItem(RESTORE_SNAPSHOT_INDEX_KEY);
     let metaList: SnapshotMetaItem[] = [];
@@ -579,7 +577,7 @@ export async function executeUndoWithCapture(
   vault: Vault = secureVault,
   random: RandomSource = systemRandom,
 ): Promise<{ ok: true; restoredSnapshot: RestoreSnapshot } | { ok: false; error: string }> {
-  // 1. Verify target snapshot can be decrypted BEFORE touching current data
+  // Make sure the target snapshot decrypts before current data is touched
   const target = await getPreRestoreSnapshot(store, vault, Date.now(), targetSnapshotId);
   if (!target) {
     return {
@@ -588,7 +586,7 @@ export async function executeUndoWithCapture(
     };
   }
 
-  // 2. Pre-undo capture: snapshot currentData BEFORE applying undo
+  // Snapshot the current data so the undo itself can be undone
   try {
     await createPreRestoreSnapshot(currentData, store, vault, random, 'pre-undo');
   } catch (err) {
@@ -598,7 +596,6 @@ export async function executeUndoWithCapture(
     };
   }
 
-  // 3. Apply target snapshot
   try {
     const err = await applyFn(target.data);
     if (err) {

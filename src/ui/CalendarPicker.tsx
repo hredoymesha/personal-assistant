@@ -69,7 +69,6 @@ export function CalendarPicker({
 
   return (
     <View style={[styles.container, { backgroundColor: c.card, borderColor: c.border }]}>
-      {/* Header: Month & Year with Navigation Controls */}
       <View style={styles.header}>
         <Pressable
           accessibilityRole="button"
@@ -100,7 +99,6 @@ export function CalendarPicker({
         </Pressable>
       </View>
 
-      {/* Weekday Labels */}
       <View style={styles.weekdaysRow}>
         {WEEKDAYS.map((wd) => (
           <Text key={wd} numberOfLines={1} style={[typography.caption, styles.weekdayText, { color: c.sub }]}>
@@ -109,7 +107,6 @@ export function CalendarPicker({
         ))}
       </View>
 
-      {/* Calendar Days Grid */}
       <View style={styles.grid}>
         {grid.map((cell) => {
           const isSelected = value === cell.dateStr;
@@ -148,7 +145,6 @@ export function CalendarPicker({
         })}
       </View>
 
-      {/* Quick Date Presets & Footer */}
       {showQuickShortcuts ? (
         <View style={[styles.footer, { borderTopColor: c.border }]}>
           <View style={styles.presetsRow}>

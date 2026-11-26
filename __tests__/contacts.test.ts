@@ -29,7 +29,7 @@ describe('Contacts domain logic (Phase 1 Identity Safety & Revalidation)', () =>
     },
   ];
 
-  // 1. Same ID, same name, completely different phones/emails
+  // Same ID, same name, completely different phones/emails
   it('flags same ID and same name with completely different phones as CONFLICT (name-only cannot authorize update)', () => {
     const incomingSameNameDiffPhone: SyncedContact[] = [
       {
@@ -59,7 +59,7 @@ describe('Contacts domain logic (Phase 1 Identity Safety & Revalidation)', () =>
     expect(preserved?.phones).toEqual(['+8801700000001']);
   });
 
-  // 2. Same ID, same name, both empty phone lists, different emails
+  // Same ID, same name, both empty phone lists, different emails
   it('flags same ID and same name with empty phone lists and different emails as CONFLICT (cannot prove identity)', () => {
     const existingEmptyPhone: SyncedContact[] = [
       {
@@ -89,7 +89,7 @@ describe('Contacts domain logic (Phase 1 Identity Safety & Revalidation)', () =>
     expect(plan.candidates[0].status).toBe('conflict');
   });
 
-  // 3. Same ID, different identities sharing one phone number
+  // Same ID, different identities sharing one phone number
   it('flags same ID with different names sharing a phone number as CONFLICT (shared number cannot authorize overwrite)', () => {
     const incomingSharedNumberDiffName: SyncedContact[] = [
       {
@@ -114,7 +114,7 @@ describe('Contacts domain logic (Phase 1 Identity Safety & Revalidation)', () =>
     expect(preserved?.fullName).toBe('Anisur Rahman');
   });
 
-  // 4. Same ID, same name, and shared phone number (authorized legitimate update)
+  // Same ID, same name, and shared phone number (authorized legitimate update)
   it('authorizes update when same ID has matching full name AND shared phone continuity', () => {
     const incomingLegitUpdate: SyncedContact[] = [
       {
@@ -141,7 +141,7 @@ describe('Contacts domain logic (Phase 1 Identity Safety & Revalidation)', () =>
     expect(updated?.phones).toEqual(['+8801700000001', '+8801700000099']);
   });
 
-  // 5. Apply-time revalidation: detects new conflict when cache drifts after preview
+  // Apply-time revalidation: detects new conflict when cache drifts after preview
   it('apply-time revalidation detects conflict if cache changes between preview and apply', () => {
     const incomingCandidate: SyncedContact = {
       id: 'fresh-id',
@@ -186,7 +186,7 @@ describe('Contacts domain logic (Phase 1 Identity Safety & Revalidation)', () =>
     expect(merged[0].fullName).toBe('Different Person');
   });
 
-  // 6. Identical re-import produces zero additions, zero updates, zero conflicts
+  // Identical re-import produces zero additions, zero updates, zero conflicts
   it('re-importing exact identical contacts produces zero additions, zero updates, and zero conflicts', () => {
     const identicalIncoming: SyncedContact[] = [
       {
@@ -223,7 +223,7 @@ describe('Contacts domain logic (Phase 1 Identity Safety & Revalidation)', () =>
     expect(merged.length).toBe(2);
   });
 
-  // 7. Unselected or blocked candidate leaves existing record completely untouched
+  // Unselected or blocked candidate leaves existing record completely untouched
   it('unselected or blocked candidate leaves existing records completely untouched', () => {
     const incomingUpdate: SyncedContact[] = [
       {
@@ -248,7 +248,7 @@ describe('Contacts domain logic (Phase 1 Identity Safety & Revalidation)', () =>
     expect(c1?.phones).toEqual(['+8801700000001']);
   });
 
-  // 8. Unrelated existing records preserved on new contact addition
+  // Unrelated existing records preserved on new contact addition
   it('merging newly added contact preserves all unrelated existing records', () => {
     const incomingNew: SyncedContact[] = [
       {
@@ -271,7 +271,7 @@ describe('Contacts domain logic (Phase 1 Identity Safety & Revalidation)', () =>
     expect(merged.find((c) => c.id === 'c99')).toBeDefined();
   });
 
-  // 9. Cross-device match requires both identical name and identical sorted phone set
+  // Cross-device match requires both identical name and identical sorted phone set
   it('cross-device match requires both identical name and identical sorted phone set', () => {
     const crossDeviceMatch: SyncedContact[] = [
       {
@@ -289,7 +289,7 @@ describe('Contacts domain logic (Phase 1 Identity Safety & Revalidation)', () =>
     expect(plan.candidates[0].matchingExistingId).toBe('c2');
   });
 
-  // 10. Filters contacts by query
+  // Filters contacts by query
   it('filters contacts by name, phone, or email case-insensitively', () => {
     expect(filterContacts(existing, 'anis').length).toBe(1);
     expect(filterContacts(existing, 'ANIS').length).toBe(1);
@@ -299,12 +299,12 @@ describe('Contacts domain logic (Phase 1 Identity Safety & Revalidation)', () =>
     expect(filterContacts(existing, '').length).toBe(2);
   });
 
-  // 11. cleanPhone normalization
+  // cleanPhone normalization
   it('cleanPhone trims string without modifying digits', () => {
     expect(cleanPhone('  +880 1711-000000  ')).toBe('+880 1711-000000');
   });
 
-  // 12. Count-preserving drift detection (target record or proposed values changed while counts stay equal)
+  // Count-preserving drift detection (target record or proposed values changed while counts stay equal)
   it('hasPlanDrifted detects semantic drift even when new/update/conflict counts remain identical', () => {
     const candidateA: SyncedContact = {
       id: 'cA',
@@ -364,7 +364,7 @@ describe('Cached Contacts Search & Empty-State Summarizer (Pure Domain Behavior)
     syncedAt: '2026-11-10T00:00:00.000Z',
   }));
 
-  // 1. Empty cache
+  // Empty cache
   it('handles empty cache with zero matched and zero displayed', () => {
     const summary = summarizeCachedContactsView(0, 0, 0, '');
     expect(summary.totalCachedCount).toBe(0);
@@ -376,7 +376,7 @@ describe('Cached Contacts Search & Empty-State Summarizer (Pure Domain Behavior)
     expect(summary.noticeText).toBeNull();
   });
 
-  // 2. One cached contact, zero search matches (Screenshot Image 8 scenario)
+  // One cached contact, zero search matches
   it('reports "No contacts match your search." when search has zero matches on non-empty cache', () => {
     const contacts: SyncedContact[] = [
       {
@@ -409,7 +409,7 @@ describe('Cached Contacts Search & Empty-State Summarizer (Pure Domain Behavior)
     expect(summary.noticeText).toBe('No contacts match your search.');
   });
 
-  // 3. Search matches below display limit (e.g. 5 matches)
+  // Search matches below display limit (e.g. 5 matches)
   it('omits truncation notice when search matches are below display limit', () => {
     const query = 'Contact 1'; // matches 1, 10-19 -> 11 items
     const matched = filterContacts(sampleContacts, query);
@@ -429,7 +429,7 @@ describe('Cached Contacts Search & Empty-State Summarizer (Pure Domain Behavior)
     expect(summary.noticeText).toBeNull();
   });
 
-  // 4. Search matches exactly equal to display limit (20 matches)
+  // Search matches exactly equal to display limit (20 matches)
   it('omits truncation notice when search matches exactly equal display limit', () => {
     const summary = summarizeCachedContactsView(50, 20, 20, 'query');
     expect(summary.isSearching).toBe(true);
@@ -438,7 +438,7 @@ describe('Cached Contacts Search & Empty-State Summarizer (Pure Domain Behavior)
     expect(summary.noticeText).toBeNull();
   });
 
-  // 5. Search matches above display limit (e.g. 60 matches, displayed 20)
+  // Search matches above display limit (e.g. 60 matches, displayed 20)
   it('reports actual displayed vs matched count when search matches exceed display limit', () => {
     const summary = summarizeCachedContactsView(100, 60, 20, 'synthetic');
     expect(summary.isSearching).toBe(true);
@@ -447,7 +447,7 @@ describe('Cached Contacts Search & Empty-State Summarizer (Pure Domain Behavior)
     expect(summary.noticeText).toBe('Showing 20 of 60 matches. Refine search to find others.');
   });
 
-  // 6. No-query total above limit (Screenshot Image 3 scenario: 617 contacts)
+  // No-query total above limit (617 contacts)
   it('reports total cached contacts truncation notice when unsearched collection exceeds display limit', () => {
     const totalCached = 617;
     const summary = summarizeCachedContactsView(totalCached, totalCached, 20, '');
@@ -457,7 +457,7 @@ describe('Cached Contacts Search & Empty-State Summarizer (Pure Domain Behavior)
     expect(summary.noticeText).toBe('Showing first 20 of 617 cached contacts. Refine search to find others.');
   });
 
-  // 7. Whitespace query & query reset
+  // Whitespace query & query reset
   it('treats whitespace query as unsearched and preserves full list on reset', () => {
     // Whitespace only
     const whitespaceMatched = filterContacts(sampleContacts, '   ');
@@ -487,7 +487,7 @@ describe('Cached Contacts Search & Empty-State Summarizer (Pure Domain Behavior)
     expect(resetSummary.noticeText).toBe('Showing first 20 of 60 cached contacts. Refine search to find others.');
   });
 
-  // 8. Case-insensitive and multi-field matching
+  // Case-insensitive and multi-field matching
   it('matches contacts across fullName, phone, and email case-insensitively', () => {
     const contacts: SyncedContact[] = [
       {
